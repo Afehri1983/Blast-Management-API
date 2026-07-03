@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/BlastManagement.Api/BlastManagement.Api.csproj" />
+    <Project Path="src/BlastManagement.Application/BlastManagement.Application.csproj" />
+    <Project Path="src/BlastManagement.Domain/BlastManagement.Domain.csproj" />
+    <Project Path="src/BlastManagement.Infrastructure/BlastManagement.Infrastructure.csproj" />
+  </Folder>
+</Solution>
