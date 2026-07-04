@@ -15,3 +15,7 @@ obj/
 ## OS
 Thumbs.db
 .DS_Store
+
+## Planning (local — do not commit)
+docs/sprint-*-plan.md
+.cursor/plans/
