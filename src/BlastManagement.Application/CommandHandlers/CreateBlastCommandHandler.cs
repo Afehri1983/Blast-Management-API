@@ -1,10 +1,11 @@
 using BlastManagement.Application.Abstractions;
 using BlastManagement.Application.Commands;
+using BlastManagement.Application.Projections;
 using BlastManagement.Domain.Aggregates;
 
 namespace BlastManagement.Application.CommandHandlers;
 
-internal sealed class CreateBlastCommandHandler(IEventStore eventStore)
+internal sealed class CreateBlastCommandHandler(IEventStore eventStore, IBlastProjection projection)
 {
     public async Task<Guid> HandleAsync(CreateBlastCommand command, CancellationToken cancellationToken)
     {
@@ -16,6 +17,9 @@ internal sealed class CreateBlastCommandHandler(IEventStore eventStore)
             expectedVersion: 0,
             blast.GetUncommittedEvents(),
             cancellationToken);
+
+        var stream = await eventStore.LoadAsync(blastId, cancellationToken);
+        projection.Apply(stream);
 
         blast.ClearUncommittedEvents();
         return blastId;
