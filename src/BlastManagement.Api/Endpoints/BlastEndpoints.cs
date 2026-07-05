@@ -17,12 +17,20 @@ internal static class BlastEndpoints
 
         blasts.MapPost("/", CreateBlast)
             .WithName("CreateBlast")
+            .WithSummary("Create a new blast")
+            .WithDescription(
+                "Creates a new blast in the Planned state and persists a BlastCreated domain event. " +
+                "The server generates the blast identifier and returns it in the response.")
             .Produces<CreateBlastResponse>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status409Conflict);
 
         blasts.MapPost("/{blastId:guid}/holes", AddHole)
             .WithName("AddHole")
+            .WithSummary("Add a hole to a blast")
+            .WithDescription(
+                "Adds a new hole in the Planned state to an existing blast. " +
+                "When the first hole is added, the blast transitions from Planned to Loaded.")
             .Produces<AddHoleResponse>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status404NotFound)
@@ -30,6 +38,10 @@ internal static class BlastEndpoints
 
         blasts.MapPut("/{blastId:guid}/holes/{holeId:guid}/charge", ChargeHole)
             .WithName("ChargeHole")
+            .WithSummary("Charge a hole")
+            .WithDescription(
+                "Charges a hole, transitioning it from Planned to Charged. " +
+                "Rejected if the hole is already charged or ready, or if the blast has already been fired.")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status404NotFound)
@@ -37,6 +49,10 @@ internal static class BlastEndpoints
 
         blasts.MapPut("/{blastId:guid}/holes/{holeId:guid}/ready", MarkHoleReady)
             .WithName("MarkHoleReady")
+            .WithSummary("Mark a hole as ready")
+            .WithDescription(
+                "Marks a charged hole as Ready. " +
+                "Rejected if the hole is not in the Charged state or if the blast has already been fired.")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status404NotFound)
@@ -44,6 +60,10 @@ internal static class BlastEndpoints
 
         blasts.MapPost("/{blastId:guid}/fire", FireBlast)
             .WithName("FireBlast")
+            .WithSummary("Fire a blast")
+            .WithDescription(
+                "Fires the blast when every hole is Ready, transitioning the blast to Blasted. " +
+                "Rejected if any hole is not Ready, if there are no holes, or if the blast has already been fired.")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status404NotFound)
@@ -51,11 +71,19 @@ internal static class BlastEndpoints
 
         blasts.MapGet("/{blastId:guid}", GetBlast)
             .WithName("GetBlast")
+            .WithSummary("Get the current blast state")
+            .WithDescription(
+                "Returns the current blast state from the in-memory projection, including all holes. " +
+                "Does not replay the event stream.")
             .Produces<BlastResponse>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
         blasts.MapGet("/{blastId:guid}/history", GetBlastHistory)
             .WithName("GetBlastHistory")
+            .WithSummary("Get the blast event history")
+            .WithDescription(
+                "Returns the raw ordered event stream for the blast from the event store, for audit and history purposes. " +
+                "Each entry includes version, timestamp, event type, and payload.")
             .Produces<IReadOnlyList<EventEnvelopeResponse>>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status404NotFound);
     }

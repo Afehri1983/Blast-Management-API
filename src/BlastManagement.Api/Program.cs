@@ -7,7 +7,25 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Composition root: Application registers handlers/projection; Infrastructure registers in-memory event store.
+// Composition root.
+//
+// API design:
+// - This exercise uses ASP.NET Core Minimal APIs because the HTTP surface is intentionally small.
+// - Minimal APIs keep the focus on the Domain, CQRS, and Event Sourcing implementation by reducing HTTP boilerplate.
+// - For a larger production application (authentication, filters, versioning, many endpoints),
+//   Controllers would be an equally valid choice without impacting the Domain, Application,
+//   or Infrastructure layers thanks to Clean Architecture.
+//
+// Event Store design:
+// - One append-only event stream per Blast, keyed by BlastId.
+// - Events are immutable and never updated or deleted.
+// - Command handlers replay the ordered event stream, execute business rules, then append new domain events.
+// - Optimistic concurrency is enforced through expectedVersion.
+// - After a successful append, handlers synchronize the in-memory projection for fast reads.
+// - GetBlast reads from the projection, while GetBlastHistory returns the raw event stream.
+//
+// AddApplication() registers CQRS handlers and the in-memory projection.
+// AddInfrastructure() registers the in-memory Event Store implementation.
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure();
 builder.Services.AddExceptionHandler<ApplicationExceptionHandler>();
